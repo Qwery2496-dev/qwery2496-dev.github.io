@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viren Launcher</title>
+
+<style>
+:root {
+    --bg-main: #000000;
+    --bg-elevated: #1c1c1e;
+    --bg-elevated-2: #2c2c2e;
+    --accent: #0a84ff;
+    --accent-soft: rgba(10,132,255,0.25);
+    --text-main: #f5f5f7;
+    --text-muted: #8e8e93;
+    --danger: #ff453a;
+    --success: #30d158;
+    --radius: 14px;
+    --transition-fast: 0.2s ease-out;
+    --transition-med: 0.3s ease-out;
+    --shadow-soft: 0 10px 30px rgba(0,0,0,0.6);
+    --shadow-subtle: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background: radial-gradient(circle at top, #1c1c1e 0, #000 55%);
+    color: var(--text-main);
+    overflow-x: hidden;
+}
+
+/* Sidebar */
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 100vh;
+    background: linear-gradient(to bottom, #1c1c1e, #050509);
+    color: var(--text-main);
+    padding-top: 20px;
+    transform: translateX(-260px);
+    transition: transform var(--transition-med);
+    box-shadow: var(--shadow-soft);
+    z-index: 50;
+}
+
+#sidebar.open {
+    transform: translateX(0);
+}
+
+#sidebarHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px 12px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 8px;
+}
+
+#sidebarHeader h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+#sidebarHeader span {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.tabList {
+    padding: 8px 0 16px 0;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+}
+
+.tab {
+    padding: 10px 18px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-main);
+    transition: background var(--transition-fast), transform 0.1s;
+}
+
+.tabNameWrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tabIndicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+}
+
+.tab.active {
+    background: rgba(10,132,255,0.22);
+}
+
+.tab:hover {
+    background: rgba(255,255,255,0.05);
+    transform: translateX(2px);
+}
+
+.tabActions {
+    display: flex;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.tabActions span {
+    cursor: pointer;
+}
+
+#addTabBtn {
+    padding: 10px 18px;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#addTabBtn:hover {
+    background: rgba(10,132,255,0.12);
+}
+
+/* Hamburger button */
+#menuBtn {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    font-size: 26px;
+    cursor: pointer;
+    z-index: 60;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    background: rgba(28,28,30,0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-subtle);
+    color: var(--text-main);
+    transition: background var(--transition-fast), transform 0.1s;
+}
+
+#menuBtn:active {
+    transform: scale(0.95);
+    background: rgba(255,255,255,0.08);
+}
+
+/* Content area */
+#contentWrapper {
+    padding: 20px;
+    padding-top: 60px;
+    max-width: 800px;
+    margin: 0 auto;
+    transition: filter var(--transition-fast), transform var(--transition-fast);
+}
+
+#contentHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+#title {
+    font-size: 28px;
+    margin: 0;
+}
+
+#contentSubtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+#tabControls {
+    display: flex;
+    gap: 8px;
+}
+
+/* Small pill buttons */
+.pillBtn {
+    border-radius: 999px;
+    border: none;
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-main);
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    box-shadow: var(--shadow-subtle);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    transition: background var(--transition-fast), transform 0.1s, box-shadow var(--transition-fast);
+}
+
+.pillBtn:hover {
+    background: rgba(255,255,255,0.15);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
+}
+
+.pillBtn:active {
+    transform: scale(0.96);
+}
+
+/* App list */
+#appList {
+    margin-top: 10px;
+}
+
+.appButton {
+    display: flex;
+    align-items: center;
+    background: rgba(28,28,30,0.95);
+    padding: 12px 12px;
+    margin: 8px 0;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-subtle);
+    cursor: pointer;
+    transition: transform 0.1s ease-out, box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.appButton:hover {
+    transform: translateY(-1px);
+    background: rgba(44,44,46,0.96);
+    box-shadow: 0 12px 26px rgba(0,0,0,0.7);
+}
+
+.appButton:active {
+    transform: scale(0.98);
+}
+
+.appButton img {
+    width: 34px;
+    height: 34px;
+    margin-right: 12px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: #111;
+}
+
+.appText {
+    display: flex;
+    flex-direction: column;
+}
+
+.appName {
+    font-size: 16px;
+}
+
+.appUrl {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* Overlay & modal */
+#overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-med);
+    z-index: 70;
+}
+
+#overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal {
+    position: fixed;
+    left: 50%;
+    top: 52%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: rgba(20,20,22,0.98);
+    border-radius: 18px;
+    padding: 18px 18px 14px 18px;
+    max-width: 360px;
+    width: calc(100% - 40px);
+    box-shadow: var(--shadow-soft);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-med), transform var(--transition-med);
+    z-index: 80;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+}
+
+.modal.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.modalHeader h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.modalHeader button {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.modalBody {
+    font-size: 14px;
+    color: var(--text-main);
+}
+
+.modalBody label {
+    display: block;
+    margin-top: 8px;
+    margin-bottom: 4px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.modalBody input,
+.modalBody select {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(44,44,46,0.98);
+    color: var(--text-main);
+    font-size: 14px;
+    outline: none;
+    transition: border var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.modalBody input:focus,
+.modalBody select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px rgba(10,132,255,0.4);
+}
+
+/* Modal footer buttons */
+.modalFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.modalFooter button {
+    border-radius: 999px;
+    border: none;
+    padding: 7px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: opacity var(--transition-fast), transform 0.1s;
+}
+
+.modalFooter button:active {
+    transform: scale(0.97);
+}
+
+.btnSecondary {
+    background: transparent;
+    color: var(--text-muted);
+}
+
+.btnPrimary {
+    background: var(--accent);
+    color: white;
+}
+
+.btnDanger {
+    background: var(--danger);
+    color: white;
+}
+
+/* Small tag for locked tabs */
+.lockTag {
+    font-size: 11px;
+    color: var(--danger);
+    border-radius: 999px;
+    padding: 2px 6px;
+    background: rgba(255,69,58,0.12);
+}
+
+/* Responsiveness */
+@media (min-width: 900px) {
+    #contentWrapper {
+        padding-top: 70px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="menuBtn">☰</div>
+
+<!-- Sidebar -->
+<div id="sidebar">
+    <div id="sidebarHeader">
+        <div>
+            <h2>Tabs</h2>
+            <span>Long‑press vibe, custom OS feel</span>
+        </div>
+    </div>
+    <div class="tabList" id="tabList"></div>
+    <div id="addTabBtn" onclick="openAddTabModal()">
+        <span>＋</span><span>Add tab</span>
+    </div>
+</div>
+
+<!-- Content -->
+<div id="contentWrapper">
+    <div id="contentHeader">
+        <div>
+            <h1 id="title">—</h1>
+            <div id="contentSubtitle"></div>
+        </div>
+        <div id="tabControls">
+            <button class="pillBtn" onclick="openAddAppModal()">
+                <span>＋</span><span>Add app</span>
+            </button>
+            <button class="pillBtn" onclick="openPasswordModal()">
+                <span>🔒</span><span>Password</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="appList"></div>
+</div>
+
+<!-- Overlay -->
+<div id="overlay" onclick="closeAllModals()"></div>
+
+<!-- Add app modal -->
+<div class="modal" id="addAppModal">
+    <div class="modalHeader">
+        <h3>Add app</h3>
+        <button onclick="closeAddAppModal()">✕</button>
+    </div>
+    <div class="modalBody">
+        <label for="appNameInput">App name</label>
+        <input id="appNameInput" placeholder="YouTube">
+
+        <label for="appUrlInput">URL (or universal link)</label>
+        <input id="appUrlInput" placeholder="https://youtube.com">
+
+        <label for="appIconInput">Icon URL (optional)</label>
+        <input id="appIconInput" placeholder="https://.../icon.png">
+
+        <label for="appTabSelect">Add to tab</label>
+        <select id="appTabSelect"></select>
+    </div>
+    <div class="modalFooter">
+        <button class="btnSecondary" onclick="closeAddAppModal()">Cancel</button>
+        <button class="btnPrimary" onclick="saveNewApp()">Add</button>
+    </div>
+</div>
+
+<!-- Password modal -->
+<div class="modal" id="passwordModal">
+    <div class="modalHeader">
+        <h3>Tab password</h3>
+        <button onclick="closePasswordModal()">✕</button>
+    </div>
+    <div class="modalBody">
+        <p id="passwordModalInfo" style="margin-top:0;margin-bottom:6px;"></p>
+
+        <label for="passwordInput">Set or change password</label>
+        <input id="passwordInput" type="password" placeholder="Leave blank to remove password">
+
+        <div class="modalFooter">
+            <button class="btnSecondary" onclick="closePasswordModal()">Close</button>
+            <button class="btnDanger" onclick="clearPassword()">Remove</button>
+            <button class="btnPrimary" onclick="savePassword()">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- Password prompt modal -->
+<div class="modal" id="passwordPromptModal">
+    <div class="modalHeader">
+        <h3>Enter password</h3>
+        <button onclick="closePasswordPromptModal()">✕</button>
+    </div>
+    <div class="modalBody">
+        <p id="passwordPromptInfo" style="margin-top:0;margin-bottom:6px;"></p>
+
+        <label for="passwordPromptInput">Password</label>
+        <input id="passwordPromptInput" type="password" placeholder="••••••">
+
+        <div class="modalFooter">
+            <button class="btnSecondary" onclick="closePasswordPromptModal()">Cancel</button>
+            <button class="btnPrimary" onclick="checkPassword()">Unlock</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ----- Data model -----
+let state = {
+    tabs: [],
+    activeTabId: null,
+    pendingTabToUnlock: null
+};
+
+const STORAGE_KEY = "viren_launcher_state_v1";
+
+// Default data for first run
+const defaultState = {
+    tabs: [
+        {
+            id: "home",
+            name: "Home",
+            locked: false,
+            apps: [
+                {
+                    id: "yt",
+                    name: "YouTube",
+                    url: "https://youtube.com",
+                    icon: "https://www.youtube.com/s/desktop/fe2f3e3b/img/favicon_144x144.png"
+                },
+                {
+                    id: "docs",
+                    name: "Google Docs",
+                    url: "https://docs.google.com",
+                    icon: "https://ssl.gstatic.com/docs/doclist/images/infinite_arrow_favicon_5.ico"
+                }
+            ]
+        },
+        {
+            id: "school",
+            name: "School",
+            locked: true,
+            apps: [
+                {
+                    id: "classroom",
+                    name: "Google Classroom",
+                    url: "https://classroom.google.com",
+                    icon: "https://www.gstatic.com/classroom/favicon.png"
+                }
+            ]
+        }
+    ],
+    activeTabId: "home"
+};
+
+// Password storage (separate so you can wipe state without losing passwords if you want)
+const PASSWORD_KEY = "viren_launcher_passwords_v1";
+let tabPasswords = {}; // { tabId: "password" }
+
+// ----- Init -----
+function loadState() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        state = saved ? JSON.parse(saved) : defaultState;
+    } catch (e) {
+        state = defaultState;
+    }
+
+    try {
+        const pw = localStorage.getItem(PASSWORD_KEY);
+        tabPasswords = pw ? JSON.parse(pw) : {};
+    } catch (e) {
+        tabPasswords = {};
+    }
+
+    // If activeTabId doesn't exist anymore, fallback
+    if (!state.tabs.find(t => t.id === state.activeTabId)) {
+        state.activeTabId = state.tabs[0]?.id || null;
+    }
+}
+
+function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function savePasswords() {
+    localStorage.setItem(PASSWORD_KEY, JSON.stringify(tabPasswords));
+}
+
+// ----- UI rendering -----
+function renderTabs() {
+    const tabList = document.getElementById("tabList");
+    tabList.innerHTML = "";
+
+    state.tabs.forEach(tab => {
+        const div = document.createElement("div");
+        div.className = "tab";
+        if (tab.id === state.activeTabId) div.classList.add("active");
+
+        const nameWrap = document.createElement("div");
+        nameWrap.className = "tabNameWrapper";
+
+        const indicator = document.createElement("div");
+        indicator.className = "tabIndicator";
+
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = tab.name;
+
+        nameWrap.appendChild(indicator);
+        nameWrap.appendChild(nameSpan);
+
+        const actions = document.createElement("div");
+        actions.className = "tabActions";
+
+        if (tabPasswords[tab.id]) {
+            const lockSpan = document.createElement("span");
+            lockSpan.className = "lockTag";
+            lockSpan.textContent = "Locked";
+            actions.appendChild(lockSpan);
+        }
+
+        div.appendChild(nameWrap);
+        div.appendChild(actions);
+
+        div.onclick = () => handleTabClick(tab.id);
+
+        tabList.appendChild(div);
+    });
+
+    // Update app modal tab select
+    const select = document.getElementById("appTabSelect");
+    select.innerHTML = "";
+    state.tabs.forEach(tab => {
+        const opt = document.createElement("option");
+        opt.value = tab.id;
+        opt.textContent = tab.name;
+        if (tab.id === state.activeTabId) opt.selected = true;
+        select.appendChild(opt);
+    });
+}
+
+function renderActiveTab() {
+    const tab = state.tabs.find(t => t.id === state.activeTabId);
+    const titleEl = document.getElementById("title");
+    const subtitleEl = document.getElementById("contentSubtitle");
+    const appList = document.getElementById("appList");
+
+    if (!tab) {
+        titleEl.textContent = "No tab";
+        subtitleEl.textContent = "";
+        appList.innerHTML = "";
+        return;
+    }
+
+    titleEl.textContent = tab.name;
+    subtitleEl.textContent = tabPasswords[tab.id]
+        ? "This group is protected. You can change or remove the password using the Password button."
+        : "Tap + Add app to drop in shortcuts. You can lock this group if you want.";
+
+    appList.innerHTML = "";
+
+    if (!tab.apps || tab.apps.length === 0) {
+        const empty = document.createElement("div");
+        empty.style.marginTop = "20px";
+        empty.style.fontSize = "14px";
+        empty.style.color = "#8e8e93";
+        empty.textContent = "No apps yet. Add one with the + Add app button.";
+        appList.appendChild(empty);
+        return;
+    }
+
+    tab.apps.forEach(app => {
+        const div = document.createElement("div");
+        div.className = "appButton";
+        div.onclick = () => openApp(app.url);
+
+        const img = document.createElement("img");
+        img.src = app.icon || "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4bb.svg";
+
+        const textWrap = document.createElement("div");
+        textWrap.className = "appText";
+
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "appName";
+        nameSpan.textContent = app.name;
+
+        const urlSpan = document.createElement("span");
+        urlSpan.className = "appUrl";
+        urlSpan.textContent = app.url;
+
+        textWrap.appendChild(nameSpan);
+        textWrap.appendChild(urlSpan);
+
+        div.appendChild(img);
+        div.appendChild(textWrap);
+
+        appList.appendChild(div);
+    });
+}
+
+// ----- Tab interactions -----
+function handleTabClick(tabId) {
+    const tab = state.tabs.find(t => t.id === tabId);
+    if (!tab) return;
+
+    if (tabPasswords[tabId]) {
+        // Require unlock
+        state.pendingTabToUnlock = tabId;
+        openPasswordPromptModal(tab.name);
+        return;
+    }
+
+    state.activeTabId = tabId;
+    saveState();
+    renderTabs();
+    renderActiveTab();
+}
+
+// ----- App handling -----
+function openApp(url) {
+    // WebClip + universal link will handle opening apps
+    window.location.href = url;
+}
+
+// ----- Sidebar toggle -----
+const sidebar = document.getElementById("sidebar");
+const menuBtn = document.getElementById("menuBtn");
+const overlay = document.getElementById("overlay");
+
+menuBtn.onclick = () => {
+    sidebar.classList.toggle("open");
+    if (sidebar.classList.contains("open")) {
+        overlay.classList.add("visible");
+    } else {
+        overlay.classList.remove("visible");
+    }
+};
+
+function closeSidebar() {
+    sidebar.classList.remove("open");
+    overlay.classList.remove("visible");
+}
+
+// ----- Add app modal -----
+function openAddAppModal() {
+    document.getElementById("addAppModal").classList.add("visible");
+    overlay.classList.add("visible");
+    document.getElementById("appNameInput").value = "";
+    document.getElementById("appUrlInput").value = "";
+    document.getElementById("appIconInput").value = "";
+}
+
+function closeAddAppModal() {
+    document.getElementById("addAppModal").classList.remove("visible");
+    maybeHideOverlay();
+}
+
+function saveNewApp() {
+    const name = document.getElementById("appNameInput").value.trim();
+    const url = document.getElementById("appUrlInput").value.trim();
+    const icon = document.getElementById("appIconInput").value.trim();
+    const tabId = document.getElementById("appTabSelect").value;
+
+    if (!name || !url) {
+        alert("Name and URL are required.");
+        return;
+    }
+
+    const tab = state.tabs.find(t => t.id === tabId);
+    if (!tab) return;
+
+    if (!tab.apps) tab.apps = [];
+    tab.apps.push({
+        id: "app_" + Date.now(),
+        name,
+        url,
+        icon
+    });
+
+    saveState();
+    closeAddAppModal();
+    renderActiveTab();
+}
+
+// ----- Add tab modal (simple prompt for now) -----
+function openAddTabModal() {
+    const name = prompt("New tab name:");
+    if (!name) return;
+    const id = "tab_" + Date.now();
+
+    state.tabs.push({
+        id,
+        name,
+        locked: false,
+        apps: []
+    });
+
+    state.activeTabId = id;
+    saveState();
+    renderTabs();
+    renderActiveTab();
+}
+
+// ----- Password modal for current tab -----
+function openPasswordModal() {
+    const tab = state.tabs.find(t => t.id === state.activeTabId);
+    if (!tab) return;
+    document.getElementById("passwordModalInfo").textContent =
+        "Protect the \"" + tab.name + "\" group with a password. Leave empty to remove.";
+    document.getElementById("passwordInput").value = "";
+    document.getElementById("passwordModal").classList.add("visible");
+    overlay.classList.add("visible");
+}
+
+function closePasswordModal() {
+    document.getElementById("passwordModal").classList.remove("visible");
+    maybeHideOverlay();
+}
+
+function savePassword() {
+    const tab = state.tabs.find(t => t.id === state.activeTabId);
+    if (!tab) return;
+    const value = document.getElementById("passwordInput").value;
+
+    if (!value) {
+        delete tabPasswords[tab.id];
+    } else {
+        tabPasswords[tab.id] = value;
+    }
+
+    savePasswords();
+    closePasswordModal();
+    renderTabs();
+    renderActiveTab();
+}
+
+function clearPassword() {
+    const tab = state.tabs.find(t => t.id === state.activeTabId);
+    if (!tab) return;
+    delete tabPasswords[tab.id];
+    savePasswords();
+    closePasswordModal();
+    renderTabs();
+    renderActiveTab();
+}
+
+// ----- Password prompt for locked tabs -----
+function openPasswordPromptModal(tabName) {
+    document.getElementById("passwordPromptInfo").textContent =
+        "\"" + tabName + "\" is locked. Enter the password to open it.";
+    document.getElementById("passwordPromptInput").value = "";
+    document.getElementById("passwordPromptModal").classList.add("visible");
+    overlay.classList.add("visible");
+}
+
+function closePasswordPromptModal() {
+    document.getElementById("passwordPromptModal").classList.remove("visible");
+    maybeHideOverlay();
+    state.pendingTabToUnlock = null;
+}
+
+function checkPassword() {
+    const entered = document.getElementById("passwordPromptInput").value;
+    const tabId = state.pendingTabToUnlock;
+    if (!tabId) return;
+    const real = tabPasswords[tabId];
+
+    if (entered === real) {
+        state.activeTabId = tabId;
+        saveState();
+        closePasswordPromptModal();
+        renderTabs();
+        renderActiveTab();
+    } else {
+        alert("Incorrect password.");
+    }
+}
+
+// ----- Overlay / modal helpers -----
+function closeAllModals() {
+    closeSidebar();
+    document.getElementById("addAppModal").classList.remove("visible");
+    document.getElementById("passwordModal").classList.remove("visible");
+    document.getElementById("passwordPromptModal").classList.remove("visible");
+    overlay.classList.remove("visible");
+    state.pendingTabToUnlock = null;
+}
+
+function maybeHideOverlay() {
+    if (
+        !document.getElementById("addAppModal").classList.contains("visible") &&
+        !document.getElementById("passwordModal").classList.contains("visible") &&
+        !document.getElementById("passwordPromptModal").classList.contains("visible") &&
+        !sidebar.classList.contains("open")
+    ) {
+        overlay.classList.remove("visible");
+    }
+}
+
+// ----- Start -----
+loadState();
+renderTabs();
+renderActiveTab();
+</script>
+
+</body>
+</html>
